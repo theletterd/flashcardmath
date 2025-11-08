@@ -1,0 +1,158 @@
+body {
+  background: #f0f4f8;
+  font-family: system-ui, -apple-system, sans-serif;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 100vh;
+  margin: 0;
+}
+
+.app {
+  background: #fff;
+  padding: 2rem;
+  border-radius: 20px;
+  box-shadow: 0 10px 25px rgba(0, 0, 0, 0.1);
+  text-align: center;
+  width: 90%;
+  max-width: 500px;
+}
+
+h1 {
+  font-size: 2rem;
+  margin-bottom: 0.25rem;
+}
+
+.subtitle {
+  font-size: 1rem;
+  color: #6b7280;
+  margin-bottom: 1.5rem;
+}
+
+.card {
+  background: #fafafa;
+  border: 3px solid #e5e7eb;
+  border-radius: 16px;
+  padding: 2rem 1rem;
+  margin-bottom: 1rem;
+  min-height: 200px;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+  font-size: 3rem;
+  font-weight: 700;
+  position: relative;
+}
+
+.problem {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-end;
+  text-align: right;
+  line-height: 1.2;
+}
+
+.problem .op {
+  display: flex;
+  align-items: center;
+  gap: 0.25rem;
+}
+
+.problem hr {
+  border: none;
+  border-top: 4px solid #333;
+  width: 100%;
+  margin-top: 0.4rem;
+}
+
+.answer-row {
+  margin-top: 1rem;
+  display: flex;
+  justify-content: center;
+  gap: 1rem;
+  align-items: center;
+}
+
+.answer-row input {
+  width: 120px;
+  font-size: 1.5rem;
+  text-align: center;
+  border: 2px solid #ccc;
+  border-radius: 8px;
+  padding: 0.5rem;
+}
+
+button {
+  font-size: 1rem;
+  padding: 0.5rem 1.25rem;
+  border: none;
+  border-radius: 10px;
+  background: #2563eb;
+  color: #fff;
+  font-weight: bold;
+  cursor: pointer;
+}
+
+button:hover {
+  background: #1e40af;
+}
+
+.status {
+  margin-top: 1rem;
+  font-size: 1.2rem;
+  font-weight: 600;
+  min-height: 1.5rem;
+}
+
+.status.correct {
+  color: #16a34a;
+}
+
+.status.wrong {
+  color: #dc2626;
+}
+
+.summary {
+  margin-top: 1rem;
+  font-size: 1rem;
+  text-align: left;
+}
+
+.controls {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 1rem;
+  margin-bottom: 1.5rem;
+}
+
+.controls label {
+  display: flex;
+  flex-direction: column;
+  font-size: 0.9rem;
+}
+
+.controls input {
+  font-size: 1rem;
+  padding: 0.3rem;
+  border: 1px solid #ccc;
+  border-radius: 6px;
+}
+
+.ops {
+  grid-column: span 2;
+  display: flex;
+  justify-content: center;
+  gap: 1rem;
+}
+
+@media (max-width: 500px) {
+  .card {
+    font-size: 2.5rem;
+  }
+
+  .answer-row input {
+    width: 90px;
+    font-size: 1.25rem;
+  }
+}
