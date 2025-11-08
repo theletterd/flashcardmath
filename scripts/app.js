@@ -5,7 +5,6 @@
   }
 
   const startBtn = document.getElementById("startBtn");
-  const submitBtn = document.getElementById("submitBtn");
   const answerInput = document.getElementById("answerInput");
   const problemText = document.getElementById("problemText");
   const statusText = document.getElementById("statusText");
@@ -25,9 +24,57 @@
   let correct = 0;
   let startTime = 0;
 
-  settingsToggle.addEventListener("click", () => {
-    const isHidden = settingsPanel.classList.toggle("hidden");
-    settingsToggle.setAttribute("aria-expanded", (!isHidden).toString());
+  function isSettingsOpen() {
+    return !settingsPanel.classList.contains("hidden");
+  }
+
+  function openSettingsPanel() {
+    settingsPanel.classList.remove("hidden");
+    settingsToggle.setAttribute("aria-expanded", "true");
+  }
+
+  function closeSettingsPanel() {
+    settingsPanel.classList.add("hidden");
+    settingsToggle.setAttribute("aria-expanded", "false");
+  }
+
+  function toggleSettingsPanel() {
+    if (isSettingsOpen()) {
+      closeSettingsPanel();
+    } else {
+      openSettingsPanel();
+    }
+  }
+
+  settingsToggle.addEventListener("click", toggleSettingsPanel);
+
+  function handleSettingsFocusOut(event) {
+    const next = event.relatedTarget;
+    if (next && (next === settingsToggle || settingsPanel.contains(next))) {
+      return;
+    }
+    closeSettingsPanel();
+  }
+
+  settingsToggle.addEventListener("blur", handleSettingsFocusOut);
+  settingsPanel.addEventListener("focusout", handleSettingsFocusOut);
+
+  document.addEventListener("pointerdown", event => {
+    if (!isSettingsOpen()) {
+      return;
+    }
+    const target = event.target;
+    if (target === settingsToggle || settingsPanel.contains(target)) {
+      return;
+    }
+    closeSettingsPanel();
+  });
+
+  document.addEventListener("keydown", event => {
+    if (event.key === "Escape" && isSettingsOpen()) {
+      closeSettingsPanel();
+      settingsToggle.focus();
+    }
   });
 
   function getConfigFromInputs() {
@@ -90,6 +137,7 @@
     if (!questions.length) {
       problemText.textContent = "Click Start";
       answerRow.classList.add("hidden");
+      startBtn.classList.remove("hidden");
       return;
     }
 
@@ -99,6 +147,7 @@
 
     problemText.textContent = "Done!";
     answerRow.classList.add("hidden");
+    startBtn.classList.remove("hidden");
     summary.innerHTML = `
       <strong>Score:</strong> ${correct}/${questions.length}<br />
       <strong>Total time:</strong> ${totalTime}s<br />
@@ -118,8 +167,8 @@
     summary.innerHTML = "";
     startTime = performance.now();
 
-    settingsPanel.classList.add("hidden");
-    settingsToggle.setAttribute("aria-expanded", "false");
+    closeSettingsPanel();
+    startBtn.classList.add("hidden");
 
     showQuestion();
   }
@@ -146,7 +195,6 @@
   }
 
   startBtn.addEventListener("click", startRound);
-  submitBtn.addEventListener("click", submitAnswer);
   answerInput.addEventListener("keydown", event => {
     if (event.key === "Enter") {
       event.preventDefault();
