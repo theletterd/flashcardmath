@@ -126,6 +126,7 @@
     }
 
     problemText.innerHTML = renderProblem(question);
+    problemText.classList.remove("finished");
     answerRow.classList.remove("hidden");
     answerInput.value = "";
     focusAnswerInput();
@@ -136,6 +137,7 @@
   function finishRound() {
     if (!questions.length) {
       problemText.textContent = "Click Start";
+      problemText.classList.remove("finished");
       answerRow.classList.add("hidden");
       startBtn.classList.remove("hidden");
       return;
@@ -145,14 +147,20 @@
     const totalTime = elapsedSeconds.toFixed(1);
     const average = (elapsedSeconds / questions.length).toFixed(2);
 
-    problemText.textContent = "Done!";
+    problemText.classList.add("finished");
+    problemText.innerHTML = `
+      <div class="done-message">Done!</div>
+      <div class="results">
+        <div class="result-line"><strong>Score:</strong> ${correct}/${questions.length}</div>
+        <div class="result-line"><strong>Total time:</strong> ${totalTime}s</div>
+        <div class="result-line"><strong>Avg per question:</strong> ${average}s</div>
+      </div>
+    `;
     answerRow.classList.add("hidden");
     startBtn.classList.remove("hidden");
-    summary.innerHTML = `
-      <strong>Score:</strong> ${correct}/${questions.length}<br />
-      <strong>Total time:</strong> ${totalTime}s<br />
-      <strong>Avg per question:</strong> ${average}s
-    `;
+    statusText.textContent = "";
+    statusText.className = "status";
+    summary.innerHTML = "";
   }
 
   function startRound() {
@@ -172,6 +180,16 @@
 
     showQuestion();
   }
+
+  function isRoundActive() {
+    return startBtn.classList.contains("hidden");
+  }
+
+  countInput.addEventListener("change", () => {
+    if (isRoundActive()) {
+      startRound();
+    }
+  });
 
   function submitAnswer() {
     if (!questions.length || !questions[index]) {
