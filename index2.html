@@ -1,0 +1,285 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <title>Harrison's Math Flashcards</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <style>
+    body {
+      background: #f0f4f8;
+      font-family: system-ui, -apple-system, sans-serif;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      min-height: 100vh;
+      margin: 0;
+    }
+
+    .app {
+      background: #fff;
+      padding: 2rem;
+      border-radius: 20px;
+      box-shadow: 0 10px 25px rgba(0, 0, 0, 0.1);
+      text-align: center;
+      width: 90%;
+      max-width: 500px;
+    }
+
+    h1 {
+      font-size: 2rem;
+      margin-bottom: 0.25rem;
+    }
+
+    .subtitle {
+      font-size: 1rem;
+      color: #6b7280;
+      margin-bottom: 1.5rem;
+    }
+
+    .card {
+      background: #fafafa;
+      border: 3px solid #e5e7eb;
+      border-radius: 16px;
+      padding: 2rem 1rem;
+      margin-bottom: 1rem;
+      min-height: 200px;
+      display: flex;
+      flex-direction: column;
+      justify-content: center;
+      align-items: center;
+      font-size: 3rem;
+      font-weight: 700;
+      position: relative;
+    }
+
+    .problem {
+      display: flex;
+      flex-direction: column;
+      align-items: flex-end;
+      text-align: right;
+      line-height: 1.2;
+    }
+
+    .problem .op {
+      display: flex;
+      align-items: center;
+      gap: 0.25rem;
+    }
+
+    .problem hr {
+      border: none;
+      border-top: 4px solid #333;
+      width: 100%;
+      margin-top: 0.4rem;
+    }
+
+    .answer-row {
+      margin-top: 1rem;
+      display: flex;
+      justify-content: center;
+      gap: 1rem;
+      align-items: center;
+    }
+
+    .answer-row input {
+      width: 120px;
+      font-size: 1.5rem;
+      text-align: center;
+      border: 2px solid #ccc;
+      border-radius: 8px;
+      padding: 0.5rem;
+    }
+
+    button {
+      font-size: 1rem;
+      padding: 0.5rem 1.25rem;
+      border: none;
+      border-radius: 10px;
+      background: #2563eb;
+      color: #fff;
+      font-weight: bold;
+      cursor: pointer;
+    }
+
+    button:hover {
+      background: #1e40af;
+    }
+
+    .status {
+      margin-top: 1rem;
+      font-size: 1.2rem;
+      font-weight: 600;
+      min-height: 1.5rem;
+    }
+
+    .status.correct { color: #16a34a; }
+    .status.wrong { color: #dc2626; }
+
+    .summary {
+      margin-top: 1rem;
+      font-size: 1rem;
+      text-align: left;
+    }
+
+    .controls {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 1rem;
+      margin-bottom: 1.5rem;
+    }
+
+    .controls label {
+      display: flex;
+      flex-direction: column;
+      font-size: 0.9rem;
+    }
+
+    .controls input {
+      font-size: 1rem;
+      padding: 0.3rem;
+      border: 1px solid #ccc;
+      border-radius: 6px;
+    }
+
+    .ops {
+      grid-column: span 2;
+      display: flex;
+      justify-content: center;
+      gap: 1rem;
+    }
+
+    @media (max-width: 500px) {
+      .card { font-size: 2.5rem; }
+      .answer-row input { width: 90px; font-size: 1.25rem; }
+    }
+  </style>
+</head>
+<body>
+  <div class="app">
+    <h1>Harrison's Math Flashcards</h1>
+    <p class="subtitle">Solve as fast as you can!</p>
+
+    <div class="controls">
+      <label>Min <input type="number" id="minValue" value="0" /></label>
+      <label>Max <input type="number" id="maxValue" value="20" /></label>
+      <label># of Questions <input type="number" id="questionCount" value="10" /></label>
+      <div class="ops">
+        <label><input type="checkbox" id="opAdd" checked /> +</label>
+        <label><input type="checkbox" id="opSub" checked /> −</label>
+      </div>
+    </div>
+
+    <button id="startBtn">Start</button>
+
+    <div class="card" id="card">
+      <div class="problem" id="problemText">Click Start</div>
+      <div class="answer-row hidden" id="answerRow">
+        <input type="number" id="answerInput" />
+        <button id="submitBtn">OK</button>
+      </div>
+      <div class="status" id="statusText"></div>
+    </div>
+
+    <div class="summary" id="summary"></div>
+  </div>
+
+  <script>
+    const startBtn = document.getElementById("startBtn");
+    const submitBtn = document.getElementById("submitBtn");
+    const answerInput = document.getElementById("answerInput");
+    const problemText = document.getElementById("problemText");
+    const statusText = document.getElementById("statusText");
+    const summary = document.getElementById("summary");
+    const answerRow = document.getElementById("answerRow");
+
+    const minInput = document.getElementById("minValue");
+    const maxInput = document.getElementById("maxValue");
+    const countInput = document.getElementById("questionCount");
+    const opAdd = document.getElementById("opAdd");
+    const opSub = document.getElementById("opSub");
+
+    let questions = [];
+    let index = 0;
+    let correct = 0;
+    let startTime = 0;
+
+    function randInt(min, max) {
+      return Math.floor(Math.random() * (max - min + 1)) + min;
+    }
+
+    function generateQuestions() {
+      const min = +minInput.value;
+      const max = +maxInput.value;
+      const count = +countInput.value;
+      const ops = [];
+      if (opAdd.checked) ops.push("+");
+      if (opSub.checked) ops.push("-");
+      const qs = [];
+      for (let i = 0; i < count; i++) {
+        const op = ops[randInt(0, ops.length - 1)];
+        let a = randInt(min, max);
+        let b = randInt(min, max);
+        if (op === "-" && b > a) [a, b] = [b, a];
+        const ans = op === "+" ? a + b : a - b;
+        qs.push({ a, b, op, ans });
+      }
+      return qs;
+    }
+
+    function showQuestion() {
+      const q = questions[index];
+      if (!q) return finishRound();
+      problemText.innerHTML = `
+        <div>${q.a}</div>
+        <div class="op">${q.op}&nbsp;${q.b}</div>
+        <hr/>
+      `;
+      answerRow.classList.remove("hidden");
+      answerInput.value = "";
+      answerInput.focus();
+      statusText.textContent = "";
+    }
+
+    function finishRound() {
+      const time = ((performance.now() - startTime) / 1000).toFixed(1);
+      problemText.innerHTML = "Done!";
+      answerRow.classList.add("hidden");
+      summary.innerHTML = `
+        <strong>Score:</strong> ${correct}/${questions.length}<br>
+        <strong>Total time:</strong> ${time}s<br>
+        <strong>Avg per question:</strong> ${(time / questions.length).toFixed(2)}s
+      `;
+    }
+
+    function startRound() {
+      questions = generateQuestions();
+      index = 0;
+      correct = 0;
+      summary.innerHTML = "";
+      startTime = performance.now();
+      showQuestion();
+    }
+
+    function submitAnswer() {
+      const q = questions[index];
+      const val = +answerInput.value;
+      if (val === q.ans) {
+        correct++;
+        statusText.textContent = "✅ Correct!";
+        statusText.className = "status correct";
+      } else {
+        statusText.textContent = `❌ It's ${q.ans}`;
+        statusText.className = "status wrong";
+      }
+      index++;
+      setTimeout(showQuestion, 400);
+    }
+
+    startBtn.addEventListener("click", startRound);
+    submitBtn.addEventListener("click", submitAnswer);
+    answerInput.addEventListener("keydown", e => {
+      if (e.key === "Enter") submitAnswer();
+    });
+  </script>
+</body>
+</html>
