@@ -1,3 +1,9 @@
+*,
+*::before,
+*::after {
+  box-sizing: border-box;
+}
+
 body {
   background: #f0f4f8;
   font-family: system-ui, -apple-system, sans-serif;
@@ -48,19 +54,27 @@ h1 {
   border: none;
   background: #e0e7ff;
   color: #1e3a8a;
-  font-size: 1.5rem;
   width: 48px;
   height: 48px;
   border-radius: 50%;
-  display: grid;
-  place-items: center;
+  display: flex;
+  align-items: center;
+  justify-content: center;
   cursor: pointer;
   transition: transform 0.15s ease, background 0.15s ease;
+  line-height: 1;
+  padding: 0;
 }
 
 .settings-toggle:hover {
   background: #c7d2fe;
   transform: rotate(10deg);
+}
+
+.settings-toggle-icon {
+  font-size: 1.4rem;
+  display: block;
+  transform: translateY(-1px);
 }
 
 .settings-panel {
@@ -99,12 +113,30 @@ h1 {
   align-items: flex-end;
   text-align: right;
   line-height: 1.2;
+  font-family: "Fira Mono", "Roboto Mono", "SFMono-Regular", "Menlo", "Consolas", monospace;
+  letter-spacing: 0.02em;
 }
 
-.problem .op {
+
+.equation-row {
   display: flex;
-  align-items: center;
-  gap: 0.25rem;
+  gap: 0.4rem;
+  justify-content: flex-end;
+  width: 100%;
+}
+
+.operand {
+  min-width: 4ch;
+  text-align: right;
+  display: inline-flex;
+  justify-content: flex-end;
+}
+
+.operator {
+  width: 2ch;
+  text-align: center;
+  display: inline-flex;
+  justify-content: center;
 }
 
 .problem hr {
@@ -212,6 +244,8 @@ button:hover {
   flex: 1 1 auto;
   margin-top: 2rem;
   gap: 1.5rem;
+  width: 100%;
+  overflow: hidden;
 }
 
 #startBtn {
@@ -227,6 +261,10 @@ button:hover {
 @media (max-width: 500px) {
   .card {
     font-size: clamp(2.2rem, 10vw, 3rem);
+  }
+
+  .operand {
+    min-width: 3ch;
   }
 
   .answer-row input {
