@@ -8,31 +8,50 @@
 </head>
 <body>
   <div class="app">
-    <h1>Harrison's Math Flashcards</h1>
-    <p class="subtitle">Solve as fast as you can!</p>
-
-    <div class="controls">
-      <label>Min <input type="number" id="minValue" value="0" /></label>
-      <label>Max <input type="number" id="maxValue" value="20" /></label>
-      <label># of Questions <input type="number" id="questionCount" value="10" /></label>
-      <div class="ops">
-        <label><input type="checkbox" id="opAdd" checked /> +</label>
-        <label><input type="checkbox" id="opSub" checked /> −</label>
+    <header class="top-bar">
+      <div class="title-block">
+        <h1>Harrison's Math Flashcards</h1>
+        <p class="subtitle">Solve as fast as you can!</p>
       </div>
-    </div>
-
-    <button id="startBtn">Start</button>
-
-    <div class="card" id="card">
-      <div class="problem" id="problemText">Click Start</div>
-      <div class="answer-row hidden" id="answerRow">
-        <input type="number" id="answerInput" />
-        <button id="submitBtn">OK</button>
+      <button class="settings-toggle" id="settingsToggle" aria-label="Settings" aria-expanded="false">
+        ⚙️
+      </button>
+      <div class="settings-panel hidden" id="settingsPanel">
+        <div class="controls">
+          <label>
+            <span>Min Answer</span>
+            <input type="number" id="minValue" value="0" />
+          </label>
+          <label>
+            <span>Max Answer</span>
+            <input type="number" id="maxValue" value="20" />
+          </label>
+          <label>
+            <span># of Questions</span>
+            <input type="number" id="questionCount" value="50" />
+          </label>
+          <div class="ops">
+            <label><input type="checkbox" id="opAdd" checked /> + Addition</label>
+            <label><input type="checkbox" id="opSub" checked /> − Subtraction</label>
+          </div>
+        </div>
       </div>
-      <div class="status" id="statusText"></div>
-    </div>
+    </header>
 
-    <div class="summary" id="summary"></div>
+    <main class="main-content">
+      <div class="card" id="card">
+        <div class="problem" id="problemText">Click Start</div>
+        <div class="answer-row hidden" id="answerRow">
+          <input type="number" id="answerInput" />
+          <button id="submitBtn">OK</button>
+        </div>
+        <div class="status" id="statusText"></div>
+      </div>
+
+      <button id="startBtn">Start</button>
+
+      <div class="summary" id="summary"></div>
+    </main>
   </div>
 
   <script>
@@ -49,33 +68,69 @@
     const countInput = document.getElementById("questionCount");
     const opAdd = document.getElementById("opAdd");
     const opSub = document.getElementById("opSub");
+    const settingsToggle = document.getElementById("settingsToggle");
+    const settingsPanel = document.getElementById("settingsPanel");
 
     let questions = [];
     let index = 0;
     let correct = 0;
     let startTime = 0;
 
+    settingsToggle.addEventListener("click", () => {
+      const isHidden = settingsPanel.classList.toggle("hidden");
+      settingsToggle.setAttribute("aria-expanded", (!isHidden).toString());
+    });
+
     function randInt(min, max) {
       return Math.floor(Math.random() * (max - min + 1)) + min;
     }
 
     function generateQuestions() {
-      const min = +minInput.value;
-      const max = +maxInput.value;
-      const count = +countInput.value;
+      let min = Number(minInput.value);
+      let max = Number(maxInput.value);
+      if (Number.isNaN(min)) min = 0;
+      if (Number.isNaN(max)) max = 0;
+      if (min > max) [min, max] = [max, min];
+      min = Math.trunc(min);
+      max = Math.trunc(max);
+      let count = Math.floor(Number(countInput.value));
+      if (!Number.isFinite(count) || count <= 0) count = 1;
+      minInput.value = min;
+      maxInput.value = max;
+      countInput.value = count;
+
       const ops = [];
       if (opAdd.checked) ops.push("+");
       if (opSub.checked) ops.push("-");
+      if (!ops.length) {
+        ops.push("+");
+      }
       const qs = [];
       for (let i = 0; i < count; i++) {
         const op = ops[randInt(0, ops.length - 1)];
-        let a = randInt(min, max);
-        let b = randInt(min, max);
-        if (op === "-" && b > a) [a, b] = [b, a];
-        const ans = op === "+" ? a + b : a - b;
-        qs.push({ a, b, op, ans });
+        qs.push(createQuestion(op, min, max));
       }
       return qs;
+    }
+
+    function createQuestion(op, min, max) {
+      const operandMin = Math.min(min, 0);
+      const operandMax = Math.max(max, 0);
+      for (let attempt = 0; attempt < 200; attempt++) {
+        let a = randInt(operandMin, operandMax);
+        let b = randInt(operandMin, operandMax);
+        if (op === "-" && min >= 0 && b > a) [a, b] = [b, a];
+        const ans = op === "+" ? a + b : a - b;
+        if (ans >= min && ans <= max) {
+          return { a, b, op, ans };
+        }
+      }
+
+      const ans = Math.min(Math.max(min, operandMin), max);
+      if (op === "-") {
+        return { a: ans, b: 0, op, ans };
+      }
+      return { a: ans, b: 0, op: "+", ans };
     }
 
     function showQuestion() {
@@ -90,6 +145,7 @@
       answerInput.value = "";
       answerInput.focus();
       statusText.textContent = "";
+      statusText.className = "status";
     }
 
     function finishRound() {
@@ -109,6 +165,8 @@
       correct = 0;
       summary.innerHTML = "";
       startTime = performance.now();
+      settingsPanel.classList.add("hidden");
+      settingsToggle.setAttribute("aria-expanded", "false");
       showQuestion();
     }
 
