@@ -16,6 +16,8 @@
   const countInput = document.getElementById("questionCount");
   const opAdd = document.getElementById("opAdd");
   const opSub = document.getElementById("opSub");
+  const opMul = document.getElementById("opMul");
+  const opDiv = document.getElementById("opDiv");
   const settingsToggle = document.getElementById("settingsToggle");
   const settingsPanel = document.getElementById("settingsPanel");
 
@@ -85,6 +87,8 @@
       ops: [
         ...(opAdd.checked ? ["+"] : []),
         ...(opSub.checked ? ["-"] : []),
+        ...(opMul.checked ? ["*"] : []),
+        ...(opDiv.checked ? ["/"] : []),
       ],
     };
   }
@@ -96,17 +100,28 @@
 
     const hasAddition = config.ops.includes("+");
     const hasSubtraction = config.ops.includes("-");
+    const hasMultiplication = config.ops.includes("*");
+    const hasDivision = config.ops.includes("/");
     opAdd.checked = hasAddition;
     opSub.checked = hasSubtraction;
+    opMul.checked = hasMultiplication;
+    opDiv.checked = hasDivision;
   }
 
   function renderProblem(question) {
+    const operatorDisplay = {
+      "+": "+",
+      "-": "-",
+      "*": "×",
+      "/": "÷",
+    };
+    const opSymbol = operatorDisplay[question.op] || question.op;
     return `
       <div class="equation-row">
         <span class="operand operand-a">${question.a}</span>
       </div>
       <div class="equation-row">
-        <span class="operator">${question.op}</span>
+        <span class="operator">${opSymbol}</span>
         <span class="operand operand-b">${question.b}</span>
       </div>
       <hr />

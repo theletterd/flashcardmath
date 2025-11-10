@@ -7,7 +7,9 @@
 })(typeof self !== "undefined" ? self : this, function () {
   "use strict";
 
-  const DEFAULT_OPS = ["+"];
+  const DEFAULT_MIN = 0;
+  const DEFAULT_MAX = 30;
+  const DEFAULT_OPS = ["+", "-", "*"];
 
   function toFiniteNumber(value, fallback) {
     const number = Number(value);
@@ -17,8 +19,8 @@
   function normalizeConfig(config) {
     const sanitized = { ...config };
 
-    let min = toFiniteNumber(sanitized.min, 0);
-    let max = toFiniteNumber(sanitized.max, 0);
+    let min = toFiniteNumber(sanitized.min, DEFAULT_MIN);
+    let max = toFiniteNumber(sanitized.max, DEFAULT_MAX);
     if (min > max) {
       const temp = min;
       min = max;
@@ -33,7 +35,7 @@
     }
 
     const opsInput = Array.isArray(sanitized.ops) ? sanitized.ops : DEFAULT_OPS;
-    const ops = opsInput.filter(op => op === "+" || op === "-");
+    const ops = opsInput.filter(op => op === "+" || op === "-" || op === "*" || op === "/");
     if (!ops.length) {
       ops.push(...DEFAULT_OPS);
     }
@@ -52,16 +54,36 @@
     const operandMax = Math.max(max, 0);
 
     for (let attempt = 0; attempt < 200; attempt++) {
-      let a = randInt(operandMin, operandMax);
-      let b = randInt(operandMin, operandMax);
+      let a;
+      let b;
+      let ans;
 
-      if (op === "-" && min >= 0 && b > a) {
-        const temp = a;
-        a = b;
-        b = temp;
+      if (op === "+" || op === "-") {
+        a = randInt(operandMin, operandMax);
+        b = randInt(operandMin, operandMax);
+
+        if (op === "-" && min >= 0 && b > a) {
+          const temp = a;
+          a = b;
+          b = temp;
+        }
+
+        ans = op === "+" ? a + b : a - b;
+      } else if (op === "*") {
+        a = randInt(operandMin, operandMax);
+        b = randInt(operandMin, operandMax);
+        ans = a * b;
+      } else if (op === "/") {
+        b = randInt(operandMin, operandMax);
+        if (b === 0) {
+          continue;
+        }
+        ans = randInt(min, max);
+        a = ans * b;
+      } else {
+        continue;
       }
 
-      const ans = op === "+" ? a + b : a - b;
       if (ans >= min && ans <= max) {
         return { a, b, op, ans };
       }
@@ -70,6 +92,12 @@
     const ans = Math.min(Math.max(min, operandMin), max);
     if (op === "-") {
       return { a: ans, b: 0, op, ans };
+    }
+    if (op === "*") {
+      return { a: ans, b: 1, op, ans };
+    }
+    if (op === "/") {
+      return { a: ans, b: 1, op, ans };
     }
     return { a: ans, b: 0, op: "+", ans };
   }
