@@ -14,6 +14,7 @@
   const minInput = document.getElementById("minValue");
   const maxInput = document.getElementById("maxValue");
   const countInput = document.getElementById("questionCount");
+  const mulMaxOperandInput = document.getElementById("mulMaxOperand");
   const opAdd = document.getElementById("opAdd");
   const opSub = document.getElementById("opSub");
   const opMul = document.getElementById("opMul");
@@ -84,6 +85,7 @@
       min: minInput.value,
       max: maxInput.value,
       count: countInput.value,
+      mulMaxOperand: mulMaxOperandInput.value,
       ops: [
         ...(opAdd.checked ? ["+"] : []),
         ...(opSub.checked ? ["-"] : []),
@@ -97,6 +99,7 @@
     minInput.value = config.min;
     maxInput.value = config.max;
     countInput.value = config.count;
+    mulMaxOperandInput.value = config.mulMaxOperand;
 
     const hasAddition = config.ops.includes("+");
     const hasSubtraction = config.ops.includes("-");
