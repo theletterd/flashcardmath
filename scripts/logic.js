@@ -10,6 +10,7 @@
   const DEFAULT_MIN = 0;
   const DEFAULT_MAX = 30;
   const DEFAULT_OPS = ["+", "-", "*"];
+  const DEFAULT_MUL_MAX_OPERAND = 5;
 
   function toFiniteNumber(value, fallback) {
     const number = Number(value);
@@ -40,7 +41,13 @@
       ops.push(...DEFAULT_OPS);
     }
 
-    return { min, max, count, ops };
+    let mulMaxOperand = toFiniteNumber(sanitized.mulMaxOperand, DEFAULT_MUL_MAX_OPERAND);
+    if (!Number.isFinite(mulMaxOperand)) {
+      mulMaxOperand = DEFAULT_MUL_MAX_OPERAND;
+    }
+    mulMaxOperand = Math.max(1, Math.trunc(mulMaxOperand));
+
+    return { min, max, count, ops, mulMaxOperand };
   }
 
   function randInt(min, max) {
@@ -49,7 +56,13 @@
     return Math.floor(Math.random() * (rangeMax - rangeMin + 1)) + rangeMin;
   }
 
-  function createQuestion(op, min, max) {
+  function createQuestion(op, min, max, options = {}) {
+    const { mulMaxOperand = DEFAULT_MUL_MAX_OPERAND } = options || {};
+    const mulOperandLimit = Math.max(
+      1,
+      Math.trunc(toFiniteNumber(mulMaxOperand, DEFAULT_MUL_MAX_OPERAND)),
+    );
+
     const operandMin = Math.min(min, 0);
     const operandMax = Math.max(max, 0);
 
@@ -70,8 +83,13 @@
 
         ans = op === "+" ? a + b : a - b;
       } else if (op === "*") {
-        a = randInt(operandMin, operandMax);
-        b = randInt(operandMin, operandMax);
+        const mulRangeMin = Math.max(operandMin, -mulOperandLimit);
+        const mulRangeMax = Math.min(operandMax, mulOperandLimit);
+        if (mulRangeMin > mulRangeMax) {
+          continue;
+        }
+        a = randInt(mulRangeMin, mulRangeMax);
+        b = randInt(mulRangeMin, mulRangeMax);
         ans = a * b;
       } else if (op === "/") {
         b = randInt(operandMin, operandMax);
@@ -94,7 +112,8 @@
       return { a: ans, b: 0, op, ans };
     }
     if (op === "*") {
-      return { a: ans, b: 1, op, ans };
+      const limitedOperand = Math.min(Math.max(ans, -mulOperandLimit), mulOperandLimit);
+      return { a: limitedOperand, b: 1, op, ans: limitedOperand };
     }
     if (op === "/") {
       return { a: ans, b: 1, op, ans };
@@ -108,7 +127,7 @@
 
     for (let i = 0; i < config.count; i++) {
       const op = config.ops[randInt(0, config.ops.length - 1)];
-      questions.push(createQuestion(op, config.min, config.max));
+      questions.push(createQuestion(op, config.min, config.max, config));
     }
 
     return { questions, config };
