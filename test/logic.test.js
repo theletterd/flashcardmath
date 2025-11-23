@@ -26,7 +26,7 @@ test('normalizeConfig uses default range and operations', () => {
   assert.strictEqual(config.max, 30);
   assert.strictEqual(config.count, 1);
   assert.deepStrictEqual(config.ops, ['+', '-', '*']);
-  assert.strictEqual(config.mulMaxOperand, 5);
+  assert.strictEqual(config.mulMaxOperand, 6);
 });
 
 test('normalizeConfig enforces minimum multiplication operand limit', () => {
@@ -79,24 +79,39 @@ test('generateQuestions subtraction questions obey configured range', () => {
 test('generateQuestions multiplication questions obey configured range', () => {
   const { questions, config } = logic.generateQuestions({
     min: 0,
-    max: 30,
+    max: 10,
     count: 20,
     ops: ['*'],
     mulMaxOperand: 3,
   });
 
   assert.strictEqual(config.min, 0);
-  assert.strictEqual(config.max, 30);
+  assert.strictEqual(config.max, 10);
   assert.strictEqual(config.mulMaxOperand, 3);
   questions.forEach(q => {
     assert.strictEqual(q.op, '*');
     assert.ok(Number.isInteger(q.a));
     assert.ok(Number.isInteger(q.b));
-    assert.ok(q.ans >= config.min, 'answer below minimum');
-    assert.ok(q.ans <= config.max, 'answer above maximum');
+    assert.ok(q.a >= 1 && q.a <= config.mulMaxOperand, 'operand a outside multiplication limit');
+    assert.ok(q.b >= 1 && q.b <= config.mulMaxOperand, 'operand b outside multiplication limit');
     assert.strictEqual(q.a * q.b, q.ans);
-    assert.ok(Math.abs(q.a) <= config.mulMaxOperand, 'operand a above multiplication limit');
-    assert.ok(Math.abs(q.b) <= config.mulMaxOperand, 'operand b above multiplication limit');
+    assert.notStrictEqual(q.a, 0);
+    assert.notStrictEqual(q.b, 0);
+  });
+});
+
+test('operands are non-zero for supported operations', () => {
+  const { questions } = logic.generateQuestions({
+    min: 0,
+    max: 12,
+    count: 50,
+    ops: ['+', '-', '*', '/'],
+    mulMaxOperand: 4,
+  });
+
+  questions.forEach(q => {
+    assert.notStrictEqual(q.a, 0, 'operand a should not be zero');
+    assert.notStrictEqual(q.b, 0, 'operand b should not be zero');
   });
 });
 
@@ -113,6 +128,7 @@ test('generateQuestions division questions obey configured range', () => {
   questions.forEach(q => {
     assert.strictEqual(q.op, '/');
     assert.notStrictEqual(q.b, 0);
+    assert.notStrictEqual(q.a, 0);
     assert.ok(Number.isInteger(q.a));
     assert.ok(Number.isInteger(q.b));
     assert.ok(q.ans >= config.min, 'answer below minimum');

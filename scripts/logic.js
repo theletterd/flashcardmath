@@ -10,7 +10,7 @@
   const DEFAULT_MIN = 0;
   const DEFAULT_MAX = 30;
   const DEFAULT_OPS = ["+", "-", "*"];
-  const DEFAULT_MUL_MAX_OPERAND = 5;
+  const DEFAULT_MUL_MAX_OPERAND = 6;
 
   function toFiniteNumber(value, fallback) {
     const number = Number(value);
@@ -56,6 +56,31 @@
     return Math.floor(Math.random() * (rangeMax - rangeMin + 1)) + rangeMin;
   }
 
+  function randNonZeroInt(min, max) {
+    const rangeMin = Math.ceil(min);
+    const rangeMax = Math.floor(max);
+    if (rangeMin > rangeMax) {
+      return null;
+    }
+    if (rangeMin === 0 && rangeMax === 0) {
+      return null;
+    }
+
+    if (rangeMin > 0 || rangeMax < 0) {
+      return randInt(rangeMin, rangeMax);
+    }
+
+    const negativeCount = -rangeMin;
+    const positiveCount = rangeMax;
+    const total = negativeCount + positiveCount;
+    const pickNegative = Math.random() * total < negativeCount;
+
+    if (pickNegative) {
+      return randInt(rangeMin, -1);
+    }
+    return randInt(1, rangeMax);
+  }
+
   function createQuestion(op, min, max, options = {}) {
     const { mulMaxOperand = DEFAULT_MUL_MAX_OPERAND } = options || {};
     const mulOperandLimit = Math.max(
@@ -72,8 +97,11 @@
       let ans;
 
       if (op === "+" || op === "-") {
-        a = randInt(operandMin, operandMax);
-        b = randInt(operandMin, operandMax);
+        a = randNonZeroInt(operandMin, operandMax);
+        b = randNonZeroInt(operandMin, operandMax);
+        if (a === null || b === null) {
+          continue;
+        }
 
         if (op === "-" && min >= 0 && b > a) {
           const temp = a;
@@ -83,42 +111,39 @@
 
         ans = op === "+" ? a + b : a - b;
       } else if (op === "*") {
-        const mulRangeMin = Math.max(operandMin, -mulOperandLimit);
-        const mulRangeMax = Math.min(operandMax, mulOperandLimit);
-        if (mulRangeMin > mulRangeMax) {
-          continue;
-        }
-        a = randInt(mulRangeMin, mulRangeMax);
-        b = randInt(mulRangeMin, mulRangeMax);
+        a = randInt(1, mulOperandLimit);
+        b = randInt(1, mulOperandLimit);
         ans = a * b;
       } else if (op === "/") {
-        b = randInt(operandMin, operandMax);
-        if (b === 0) {
+        b = randNonZeroInt(operandMin, operandMax);
+        ans = randNonZeroInt(min, max);
+        if (b === null || ans === null) {
           continue;
         }
-        ans = randInt(min, max);
         a = ans * b;
       } else {
         continue;
       }
 
-      if (ans >= min && ans <= max) {
+      if (op === "*" || (ans >= min && ans <= max)) {
         return { a, b, op, ans };
       }
     }
 
     const ans = Math.min(Math.max(min, operandMin), max);
+    const fallbackOperand = randNonZeroInt(operandMin || 1, Math.max(1, operandMax)) || 1;
+
     if (op === "-") {
-      return { a: ans, b: 0, op, ans };
+      return { a: ans || fallbackOperand, b: fallbackOperand, op, ans: (ans || fallbackOperand) - fallbackOperand };
     }
     if (op === "*") {
-      const limitedOperand = Math.min(Math.max(ans, -mulOperandLimit), mulOperandLimit);
-      return { a: limitedOperand, b: 1, op, ans: limitedOperand };
+      const limitedOperand = Math.min(Math.max(1, mulOperandLimit), mulOperandLimit);
+      return { a: limitedOperand, b: limitedOperand, op, ans: limitedOperand * limitedOperand };
     }
     if (op === "/") {
-      return { a: ans, b: 1, op, ans };
+      return { a: ans || fallbackOperand, b: fallbackOperand, op, ans: (ans || fallbackOperand) / fallbackOperand };
     }
-    return { a: ans, b: 0, op: "+", ans };
+    return { a: fallbackOperand, b: ans || fallbackOperand, op: "+", ans: fallbackOperand + (ans || fallbackOperand) };
   }
 
   function generateQuestions(configInput) {
