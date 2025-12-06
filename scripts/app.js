@@ -24,7 +24,8 @@
 
   let questions = [];
   let index = 0;
-  let correct = 0;
+  let firstTryCorrect = 0;
+  let attemptsForCurrent = 0;
   let startTime = 0;
 
   function isSettingsOpen() {
@@ -143,6 +144,7 @@
       return;
     }
 
+    attemptsForCurrent = 0;
     problemText.innerHTML = renderProblem(question);
     problemText.classList.remove("finished");
     answerRow.classList.remove("hidden");
@@ -169,7 +171,7 @@
     problemText.innerHTML = `
       <div class="done-message">Done!</div>
       <div class="results">
-        <div class="result-line"><strong>Score:</strong> ${correct}/${questions.length}</div>
+        <div class="result-line"><strong>Score:</strong> ${firstTryCorrect}/${questions.length}</div>
         <div class="result-line"><strong>Total time:</strong> ${totalTime}s</div>
         <div class="result-line"><strong>Avg per question:</strong> ${average}s</div>
       </div>
@@ -189,7 +191,8 @@
 
     questions = generated;
     index = 0;
-    correct = 0;
+    firstTryCorrect = 0;
+    attemptsForCurrent = 0;
     summary.innerHTML = "";
     startTime = performance.now();
 
@@ -218,16 +221,20 @@
     const userAnswer = Number(answerInput.value);
 
     if (userAnswer === currentQuestion.ans) {
-      correct += 1;
+      if (attemptsForCurrent === 0) {
+        firstTryCorrect += 1;
+      }
       statusText.textContent = "✅ Correct!";
       statusText.className = "status correct";
+      attemptsForCurrent = 0;
+      index += 1;
+      setTimeout(showQuestion, 400);
     } else {
-      statusText.textContent = `❌ It's ${currentQuestion.ans}`;
+      attemptsForCurrent += 1;
+      statusText.textContent = "❌ Try again";
       statusText.className = "status wrong";
+      focusAnswerInput();
     }
-
-    index += 1;
-    setTimeout(showQuestion, 400);
   }
 
   startBtn.addEventListener("click", startRound);
