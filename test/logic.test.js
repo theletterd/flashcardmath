@@ -14,7 +14,7 @@ test('normalizeConfig sorts min and max values and coalesces ops', () => {
 
   assert.strictEqual(config.min, -5);
   assert.strictEqual(config.max, 10);
-  assert.strictEqual(config.count, 1);
+  assert.strictEqual(config.count, 30);
   assert.deepStrictEqual(config.ops, ['-', '*', '/']);
   assert.strictEqual(config.mulMaxOperand, 8);
 });
@@ -24,9 +24,9 @@ test('normalizeConfig uses default range and operations', () => {
 
   assert.strictEqual(config.min, 0);
   assert.strictEqual(config.max, 30);
-  assert.strictEqual(config.count, 1);
-  assert.deepStrictEqual(config.ops, ['+', '-', '*']);
-  assert.strictEqual(config.mulMaxOperand, 6);
+  assert.strictEqual(config.count, 30);
+  assert.deepStrictEqual(config.ops, ['*']);
+  assert.strictEqual(config.mulMaxOperand, 10);
 });
 
 test('normalizeConfig enforces minimum multiplication operand limit', () => {
