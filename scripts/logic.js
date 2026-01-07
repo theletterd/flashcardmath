@@ -9,8 +9,9 @@
 
   const DEFAULT_MIN = 0;
   const DEFAULT_MAX = 30;
-  const DEFAULT_OPS = ["+", "-", "*"];
-  const DEFAULT_MUL_MAX_OPERAND = 6;
+  const DEFAULT_COUNT = 30;
+  const DEFAULT_OPS = ["*"];
+  const DEFAULT_MUL_MAX_OPERAND = 10;
 
   function toFiniteNumber(value, fallback) {
     const number = Number(value);
@@ -30,9 +31,9 @@
     min = Math.trunc(min);
     max = Math.trunc(max);
 
-    let count = Math.floor(toFiniteNumber(sanitized.count, 1));
+    let count = Math.floor(toFiniteNumber(sanitized.count, DEFAULT_COUNT));
     if (!Number.isFinite(count) || count < 1) {
-      count = 1;
+      count = DEFAULT_COUNT;
     }
 
     const opsInput = Array.isArray(sanitized.ops) ? sanitized.ops : DEFAULT_OPS;
