@@ -31,7 +31,7 @@ test('normalizeConfig uses default range and operations', () => {
 
 test('normalizeConfig enforces minimum multiplication operand limit', () => {
   const config = logic.normalizeConfig({ mulMaxOperand: -3 });
-  assert.strictEqual(config.mulMaxOperand, 1);
+  assert.strictEqual(config.mulMaxOperand, 2);
 });
 
 test('generateQuestions creates the requested number of questions', () => {
@@ -92,8 +92,8 @@ test('generateQuestions multiplication questions obey configured range', () => {
     assert.strictEqual(q.op, '*');
     assert.ok(Number.isInteger(q.a));
     assert.ok(Number.isInteger(q.b));
-    assert.ok(q.a >= 1 && q.a <= config.mulMaxOperand, 'operand a outside multiplication limit');
-    assert.ok(q.b >= 1 && q.b <= config.mulMaxOperand, 'operand b outside multiplication limit');
+    assert.ok(q.a >= 2 && q.a <= config.mulMaxOperand, 'operand a outside multiplication limit');
+    assert.ok(q.b >= 2 && q.b <= config.mulMaxOperand, 'operand b outside multiplication limit');
     assert.strictEqual(q.a * q.b, q.ans);
     assert.notStrictEqual(q.a, 0);
     assert.notStrictEqual(q.b, 0);

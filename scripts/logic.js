@@ -12,6 +12,7 @@
   const DEFAULT_COUNT = 30;
   const DEFAULT_OPS = ["*"];
   const DEFAULT_MUL_MAX_OPERAND = 10;
+  const MIN_MUL_OPERAND = 2;
 
   function toFiniteNumber(value, fallback) {
     const number = Number(value);
@@ -46,7 +47,7 @@
     if (!Number.isFinite(mulMaxOperand)) {
       mulMaxOperand = DEFAULT_MUL_MAX_OPERAND;
     }
-    mulMaxOperand = Math.max(1, Math.trunc(mulMaxOperand));
+    mulMaxOperand = Math.max(MIN_MUL_OPERAND, Math.trunc(mulMaxOperand));
 
     return { min, max, count, ops, mulMaxOperand };
   }
@@ -85,7 +86,7 @@
   function createQuestion(op, min, max, options = {}) {
     const { mulMaxOperand = DEFAULT_MUL_MAX_OPERAND } = options || {};
     const mulOperandLimit = Math.max(
-      1,
+      MIN_MUL_OPERAND,
       Math.trunc(toFiniteNumber(mulMaxOperand, DEFAULT_MUL_MAX_OPERAND)),
     );
 
@@ -112,8 +113,8 @@
 
         ans = op === "+" ? a + b : a - b;
       } else if (op === "*") {
-        a = randInt(1, mulOperandLimit);
-        b = randInt(1, mulOperandLimit);
+        a = randInt(MIN_MUL_OPERAND, mulOperandLimit);
+        b = randInt(MIN_MUL_OPERAND, mulOperandLimit);
         ans = a * b;
       } else if (op === "/") {
         b = randNonZeroInt(operandMin, operandMax);
@@ -138,7 +139,7 @@
       return { a: ans || fallbackOperand, b: fallbackOperand, op, ans: (ans || fallbackOperand) - fallbackOperand };
     }
     if (op === "*") {
-      const limitedOperand = Math.min(Math.max(1, mulOperandLimit), mulOperandLimit);
+      const limitedOperand = Math.min(Math.max(MIN_MUL_OPERAND, mulOperandLimit), mulOperandLimit);
       return { a: limitedOperand, b: limitedOperand, op, ans: limitedOperand * limitedOperand };
     }
     if (op === "/") {
