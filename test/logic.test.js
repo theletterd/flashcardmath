@@ -26,7 +26,7 @@ test('normalizeConfig uses default range and operations', () => {
   assert.strictEqual(config.max, 30);
   assert.strictEqual(config.count, 30);
   assert.deepStrictEqual(config.ops, ['*']);
-  assert.strictEqual(config.mulMaxOperand, 10);
+  assert.strictEqual(config.mulMaxOperand, 12);
 });
 
 test('normalizeConfig enforces minimum multiplication operand limit', () => {
@@ -131,8 +131,27 @@ test('generateQuestions division questions obey configured range', () => {
     assert.notStrictEqual(q.a, 0);
     assert.ok(Number.isInteger(q.a));
     assert.ok(Number.isInteger(q.b));
-    assert.ok(q.ans >= config.min, 'answer below minimum');
-    assert.ok(q.ans <= config.max, 'answer above maximum');
+    assert.ok(q.b >= 2 && q.b <= config.mulMaxOperand, 'divisor outside multiplication limit');
+    assert.ok(q.ans >= 2 && q.ans <= config.mulMaxOperand, 'quotient outside multiplication limit');
     assert.strictEqual(q.a / q.b, q.ans);
   });
 });
+
+test('division uses multiplication operand limits even when answer range is narrower', () => {
+  const { questions, config } = logic.generateQuestions({
+    min: 0,
+    max: 3,
+    count: 20,
+    ops: ['/'],
+    mulMaxOperand: 6,
+  });
+
+  assert.strictEqual(config.mulMaxOperand, 6);
+  questions.forEach(q => {
+    assert.strictEqual(q.op, '/');
+    assert.ok(q.b >= 2 && q.b <= config.mulMaxOperand, 'divisor outside multiplication limit');
+    assert.ok(q.ans >= 2 && q.ans <= config.mulMaxOperand, 'quotient outside multiplication limit');
+    assert.strictEqual(q.a / q.b, q.ans);
+  });
+});
+
