@@ -11,7 +11,7 @@
   const DEFAULT_MAX = 30;
   const DEFAULT_COUNT = 30;
   const DEFAULT_OPS = ["*"];
-  const DEFAULT_MUL_MAX_OPERAND = 10;
+  const DEFAULT_MUL_MAX_OPERAND = 12;
   const MIN_MUL_OPERAND = 2;
 
   function toFiniteNumber(value, fallback) {
@@ -117,17 +117,14 @@
         b = randInt(MIN_MUL_OPERAND, mulOperandLimit);
         ans = a * b;
       } else if (op === "/") {
-        b = randNonZeroInt(operandMin, operandMax);
-        ans = randNonZeroInt(min, max);
-        if (b === null || ans === null) {
-          continue;
-        }
+        b = randInt(MIN_MUL_OPERAND, mulOperandLimit);
+        ans = randInt(MIN_MUL_OPERAND, mulOperandLimit);
         a = ans * b;
       } else {
         continue;
       }
 
-      if (op === "*" || (ans >= min && ans <= max)) {
+      if (op === "*" || op === "/" || (ans >= min && ans <= max)) {
         return { a, b, op, ans };
       }
     }
@@ -143,7 +140,8 @@
       return { a: limitedOperand, b: limitedOperand, op, ans: limitedOperand * limitedOperand };
     }
     if (op === "/") {
-      return { a: ans || fallbackOperand, b: fallbackOperand, op, ans: (ans || fallbackOperand) / fallbackOperand };
+      const limitedOperand = Math.min(Math.max(MIN_MUL_OPERAND, mulOperandLimit), mulOperandLimit);
+      return { a: limitedOperand * limitedOperand, b: limitedOperand, op, ans: limitedOperand };
     }
     return { a: fallbackOperand, b: ans || fallbackOperand, op: "+", ans: fallbackOperand + (ans || fallbackOperand) };
   }
