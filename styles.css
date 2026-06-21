@@ -536,7 +536,7 @@ button:focus-visible {
 
 .stats-toggle {
   border: 3px solid transparent;
-  background: linear-gradient(135deg, #a7f3d0, #93c5fd);
+  background: linear-gradient(135deg, #6ee7b7, #60a5fa);
   color: #0f3d2e;
   width: 48px;
   height: 48px;
@@ -562,7 +562,12 @@ button:focus-visible {
 }
 
 .stats-toggle-icon {
-  font-size: 1.25rem;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.stats-toggle-icon svg {
   display: block;
 }
 
